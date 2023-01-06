@@ -1,2 +1,4 @@
-# aspire
-linux on my laptop
+# Memo
+
+- this is a practice project.
+- markdown syntax test.
