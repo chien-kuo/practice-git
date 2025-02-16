@@ -22,3 +22,8 @@
 >     git clone ${i} ~/.vim/pack/vendor/start/${plugin}
 >     vim -u NONE -c "helptags ~/.vim/pack/vendor/start/${plugin}/doc" -c q
 > done
+>
+>
+>
+> " F2 for highlight word under cursor
+> nnoremap <F2> :let @/='\<<C-R>=expand("<cword>")<CR>\>'<CR>:set hls<CR>
