@@ -1,7 +1,7 @@
 #!/bin/env python3
 import datetime
 
-start_date = datetime.date(2025, 2, 27)
+start_date = datetime.date(2025, 3, 3)
 end_date = datetime.date(2026, 1, 18)
 saturday_count = 0
 current_date = start_date
