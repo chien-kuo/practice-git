@@ -1,19 +1,331 @@
-// --- 1. 初始化 Firebase ---
-// ↓↓↓↓↓↓↓↓↓ 從這裡開始修改 ↓↓↓↓↓↓↓↓↓
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>門牌意見調查表 (正式發布版)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBzo23Bb1cAhAwLsdq-BtSyQlpnAX5teKw",
-    authDomain: "houseopinionapp.firebaseapp.com",
-    projectId: "houseopinionapp",
-    storageBucket: "houseopinionapp.firebasestorage.app",
-    messagingSenderId: "80672201264",
-    appId: "1:80672201264:web:ab183de27b1583e6cb6bf5",
-    measurementId: "G-KBFD5VZTZD"
-  };
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-// ↑↑↑↑↑↑↑↑↑ 修改結束 ↑↑↑↑↑↑↑↑↑
+    <script type="text/babel">
+        // ==========================================
+        //         步驟：設定您的資料庫連線
+        // ==========================================
+        
+        // 1. 請刪除下面這段註解與範例物件
+        // 2. 將您從 Firebase Console 複製的整段 const firebaseConfig = { ... }; 貼在這邊
+        
+        const firebaseConfig = {
+            // 請將這裡替換成您的真實設定 (apiKey, authDomain, projectId 等)
+            // 範例：
+            // apiKey: "AIzaSyDxxxxxxxxx...",
+            // authDomain: "your-project.firebaseapp.com",
+            // ...
+    	    apiKey: "AIzaSyBzo23Bb1cAhAwLsdq-BtSyQlpnAX5teKw",
+            authDomain: "houseopinionapp.firebaseapp.com",
+            projectId: "houseopinionapp",
+            storageBucket: "houseopinionapp.firebasestorage.app",
+            messagingSenderId: "80672201264",
+            appId: "1:80672201264:web:ab183de27b1583e6cb6bf5",
+            measurementId: "G-KBFD5VZTZD"
+        };
 
-// 下面這幾行保留不動，用來啟動 Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+        // ==========================================
+        //         設定結束，以下請勿更動
+        // ==========================================
+
+        if (!firebase.apps.length) {
+            // 如果您貼上的設定正確，這裡就會啟動您的資料庫
+            try {
+                firebase.initializeApp(firebaseConfig);
+            } catch (e) {
+                console.error("Firebase 初始化失敗，請檢查 firebaseConfig 是否填寫正確。", e);
+                document.body.innerHTML = "<h1 style='padding:20px; color:red'>設定錯誤：請檢查程式碼中的 firebaseConfig 是否已填入正確資訊。</h1>";
+            }
+        }
+        
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+        
+        // 設定集名稱
+        const PUBLIC_COLLECTION = 'opinions_data';
+        // 預設頻道 ID
+        const DEFAULT_SYNC_ID = 'community-board-global-v1';
+
+        const HOUSE_NUMBERS = [
+            1, 3, 5, 7, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29,
+            2, 6, 8, 10, 12, 16, 18, 20, 22, 26, 28, 30, 32, 36, 38
+        ];
+
+        const App = () => {
+            const [syncId, setSyncId] = React.useState(DEFAULT_SYNC_ID);
+            const [tempSyncId, setTempSyncId] = React.useState(DEFAULT_SYNC_ID);
+            const [isEditingSyncId, setIsEditingSyncId] = React.useState(false);
+
+            const [user, setUser] = React.useState(null);
+            const [dataList, setDataList] = React.useState([]);
+            const [loading, setLoading] = React.useState(true);
+            const [errorMsg, setErrorMsg] = React.useState(null);
+            const [submitting, setSubmitting] = React.useState(false);
+
+            const [selectedHouse, setSelectedHouse] = React.useState(HOUSE_NUMBERS[0]);
+            const [opinion, setOpinion] = React.useState('');
+
+            const [isAdmin, setIsAdmin] = React.useState(false);
+            const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+            const [adminUser, setAdminUser] = React.useState('');
+            const [adminPass, setAdminPass] = React.useState('');
+            const [loginError, setLoginError] = React.useState('');
+
+            // Auth
+            React.useEffect(() => {
+                // 正式環境直接使用匿名登入
+                auth.signInAnonymously().catch(error => {
+                    console.error("Auth Error:", error);
+                    setErrorMsg("連線驗證失敗: " + error.message);
+                });
+                return auth.onAuthStateChanged(setUser);
+            }, []);
+
+            // Data Sync
+            React.useEffect(() => {
+                if (!user || !syncId) return;
+
+                setErrorMsg(null);
+                setLoading(true);
+
+                // 路徑: artifacts/{syncId}/public/data/{PUBLIC_COLLECTION}
+                // 注意：在您自己的 Firebase 中，其實可以簡化路徑，但為了相容目前的程式邏輯，
+                // 我們維持這個結構。這會在您的 Firestore 建立 artifacts 集合。
+                const collectionRef = db.collection('artifacts')
+                                        .doc(syncId)
+                                        .collection('public')
+                                        .doc('data')
+                                        .collection(PUBLIC_COLLECTION);
+
+                const unsubscribe = collectionRef.onSnapshot((snapshot) => {
+                    const loadedData = [];
+                    snapshot.forEach(doc => {
+                        loadedData.push({ id: doc.id, ...doc.data() });
+                    });
+                    loadedData.sort((a, b) => parseInt(a.houseNumber) - parseInt(b.houseNumber));
+                    setDataList(loadedData);
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Snapshot Error:", error);
+                    setErrorMsg(`資料讀取錯誤: ${error.message} (請確認 Firestore 規則是否設為公開測試模式)`);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [user, syncId]);
+
+            // Handlers
+            const handleUpdateSyncId = () => {
+                if (tempSyncId.trim()) {
+                    setSyncId(tempSyncId.trim());
+                    setIsEditingSyncId(false);
+                }
+            };
+
+            const handleSubmit = async () => {
+                if (!opinion.trim()) return alert("請輸入您的意見");
+                if (!user) return alert("系統尚未連線");
+
+                setSubmitting(true);
+                try {
+                    const houseNumInt = parseInt(selectedHouse);
+                    const docId = `house_${houseNumInt}`;
+                    
+                    const docRef = db.collection('artifacts')
+                                     .doc(syncId)
+                                     .collection('public')
+                                     .doc('data')
+                                     .collection(PUBLIC_COLLECTION)
+                                     .doc(docId);
+
+                    await docRef.set({
+                        houseNumber: houseNumInt,
+                        opinion: opinion.trim(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        userId: user.uid
+                    });
+                    setOpinion('');
+                } catch (err) {
+                    alert(`送出失敗: ${err.message}`);
+                } finally {
+                    setSubmitting(false);
+                }
+            };
+
+            const handleAdminLogin = () => {
+                if (adminUser === 'admin_' && adminPass === 'ad_123_min') {
+                    setIsAdmin(true);
+                    setShowAdminLogin(false);
+                    setAdminUser(''); setAdminPass(''); setLoginError('');
+                } else {
+                    setLoginError('帳號或密碼錯誤');
+                }
+            };
+
+            const handleExportCSV = () => {
+                const headers = ["門牌號碼,您的意見,更新時間"];
+                const rows = dataList.map(row => {
+                    const time = row.updatedAt ? new Date(row.updatedAt.seconds * 1000).toLocaleString('zh-TW') : '';
+                    const safeOpinion = `"${row.opinion.replace(/"/g, '""')}"`;
+                    return `${row.houseNumber},${safeOpinion},${time}`;
+                });
+                const csvContent = "\uFEFF" + [headers, ...rows].join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `opinion_data_${syncId}.csv`;
+                link.click();
+            };
+
+            const handleClearData = async () => {
+                if (!confirm("確定要清空目前頻道的所有資料嗎？")) return;
+                setSubmitting(true);
+                try {
+                     const collectionRef = db.collection('artifacts')
+                                        .doc(syncId)
+                                        .collection('public')
+                                        .doc('data')
+                                        .collection(PUBLIC_COLLECTION);
+                    const snapshot = await collectionRef.get();
+                    const batch = db.batch();
+                    snapshot.docs.forEach(doc => batch.delete(doc.ref));
+                    await batch.commit();
+                    alert("資料已清空");
+                } catch (err) {
+                    alert("清空失敗：" + err.message);
+                } finally {
+                    setSubmitting(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen pb-12 flex flex-col relative bg-gray-50">
+                    {/* Sync ID Controller */}
+                    <div className="bg-gray-800 text-gray-300 text-sm py-2 px-4 shadow-inner">
+                        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <i className="fas fa-network-wired text-green-400"></i>
+                                <span>同步頻道 ID:</span>
+                                {isEditingSyncId ? (
+                                    <div className="flex gap-1">
+                                        <input type="text" value={tempSyncId} onChange={(e) => setTempSyncId(e.target.value)} className="bg-gray-700 text-white px-2 py-0.5 rounded border border-gray-600 focus:outline-none focus:border-blue-400" />
+                                        <button onClick={handleUpdateSyncId} className="bg-green-600 text-white px-2 rounded hover:bg-green-500"><i className="fas fa-check"></i></button>
+                                        <button onClick={() => { setIsEditingSyncId(false); setTempSyncId(syncId); }} className="bg-gray-600 text-white px-2 rounded hover:bg-gray-500"><i className="fas fa-times"></i></button>
+                                    </div>
+                                ) : (
+                                    <span className="font-mono font-bold text-white bg-gray-700 px-2 rounded cursor-pointer hover:bg-gray-600" title="點擊修改" onClick={() => setIsEditingSyncId(true)}>{syncId} <i className="fas fa-pencil-alt text-xs ml-1 text-gray-400"></i></span>
+                                )}
+                            </div>
+                            <div className="text-xs text-gray-400">{user ? `已連線` : '連線中...'} • ID 相同者資料互通</div>
+                        </div>
+                    </div>
+
+                    {/* Error Banner */}
+                    {errorMsg && <div className="bg-red-500 text-white px-4 py-2 text-center shadow"><i className="fas fa-exclamation-circle mr-2"></i> {errorMsg}</div>}
+
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border-b border-gray-200">
+                        <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-blue-800 flex items-center"><i className="fas fa-home mr-2 text-blue-600"></i>社區意見調查</h1>
+                            <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminLogin(true)} className={`text-sm px-4 py-2 rounded-lg font-medium transition ${isAdmin ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{isAdmin ? '登出後台' : '管理者後台'}</button>
+                        </div>
+                    </header>
+
+                    <main className="flex-grow max-w-5xl mx-auto w-full px-4 py-8 space-y-6">
+                        {/* Admin Panel */}
+                        {isAdmin && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 fade-in flex items-center justify-between flex-wrap gap-4">
+                                <div className="flex items-center text-yellow-800 font-bold"><i className="fas fa-user-cog mr-2"></i> 管理模式</div>
+                                <div className="flex gap-2">
+                                    <button onClick={handleExportCSV} disabled={dataList.length === 0} className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 disabled:opacity-50 text-sm flex items-center"><i className="fas fa-download mr-1"></i> CSV</button>
+                                    <button onClick={handleClearData} disabled={dataList.length === 0} className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 disabled:opacity-50 text-sm flex items-center"><i className="fas fa-trash mr-1"></i> 清空</button>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid md:grid-cols-12 gap-8">
+                            <div className="md:col-span-4">
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 sticky top-4">
+                                    <h2 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">填寫資料</h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">1. 門牌號碼</label>
+                                            <div className="relative">
+                                                <select value={selectedHouse} onChange={(e) => setSelectedHouse(e.target.value)} className="w-full bg-gray-50 border border-gray-300 rounded-lg p-2.5 appearance-none focus:ring-2 focus:ring-blue-500 outline-none">
+                                                    {HOUSE_NUMBERS.map(n => (<option key={n} value={n}>{n} 號</option>))}
+                                                </select>
+                                                <i className="fas fa-chevron-down absolute right-3 top-3.5 text-gray-400 text-sm pointer-events-none"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">2. 您的意見</label>
+                                            <textarea value={opinion} onChange={(e) => setOpinion(e.target.value)} rows="5" className="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="請輸入內容..."></textarea>
+                                        </div>
+                                        <button onClick={handleSubmit} disabled={submitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">{submitting ? '處理中...' : '送出資料'}</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="md:col-span-8">
+                                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden min-h-[400px]">
+                                    <div className="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                                        <h3 className="font-bold text-gray-700">意見列表</h3>
+                                        <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-mono">頻道: {syncId}</span>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-gray-50 text-gray-500 text-sm uppercase"><tr><th className="px-6 py-3 font-semibold w-24">門牌</th><th className="px-6 py-3 font-semibold">內容</th></tr></thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {loading ? (<tr><td colSpan="2" className="p-8 text-center text-gray-400"><i className="fas fa-spinner fa-spin text-2xl"></i></td></tr>) : dataList.length === 0 ? (<tr><td colSpan="2" className="p-12 text-center text-gray-400">尚無資料</td></tr>) : (dataList.map(item => (<tr key={item.id} className="hover:bg-blue-50 transition group"><td className="px-6 py-4 align-top"><span className="inline-block bg-blue-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-sm">{item.houseNumber}</span></td><td className="px-6 py-4 text-gray-700 break-words align-top">{item.opinion}<div className="text-xs text-gray-400 mt-1 opacity-0 group-hover:opacity-100 transition">更新於: {item.updatedAt ? new Date(item.updatedAt.seconds * 1000).toLocaleString('zh-TW') : ''}</div></td></tr>)))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    {showAdminLogin && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 fade-in">
+                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+                                <div className="bg-gray-800 p-4 flex justify-between items-center text-white"><h3 className="font-bold">後台登入</h3><button onClick={() => setShowAdminLogin(false)}><i className="fas fa-times hover:text-red-400"></i></button></div>
+                                <div className="p-6 space-y-4"><input type="text" value={adminUser} onChange={e => setAdminUser(e.target.value)} className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="帳號" /><input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)} className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none" placeholder="密碼" />{loginError && <p className="text-red-500 text-sm text-center">{loginError}</p>}<button onClick={handleAdminLogin} className="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700">登入</button></div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
