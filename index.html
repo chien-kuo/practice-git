@@ -1,0 +1,19 @@
+// --- 1. 初始化 Firebase ---
+// ↓↓↓↓↓↓↓↓↓ 從這裡開始修改 ↓↓↓↓↓↓↓↓↓
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBzo23Bb1cAhAwLsdq-BtSyQlpnAX5teKw",
+    authDomain: "houseopinionapp.firebaseapp.com",
+    projectId: "houseopinionapp",
+    storageBucket: "houseopinionapp.firebasestorage.app",
+    messagingSenderId: "80672201264",
+    appId: "1:80672201264:web:ab183de27b1583e6cb6bf5",
+    measurementId: "G-KBFD5VZTZD"
+  };
+
+// ↑↑↑↑↑↑↑↑↑ 修改結束 ↑↑↑↑↑↑↑↑↑
+
+// 下面這幾行保留不動，用來啟動 Firebase
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
