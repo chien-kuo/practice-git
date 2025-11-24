@@ -202,7 +202,7 @@
                 if (!confirm("確定要清空所有資料嗎？此操作對所有使用者生效。")) return;
                 
                 setSubmitting(true);
-                try {
+                try {/*
                      const collectionRef = db.collection('artifacts')
                                         .doc(appId)
                                         .collection('public')
@@ -212,8 +212,8 @@
                     const snapshot = await collectionRef.get();
                     const batch = db.batch();
                     snapshot.docs.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                    alert("資料已清空");
+                    await batch.commit();*/
+                    alert("功能已取消");
                 } catch (err) {
                     alert("清空失敗：" + err.message);
                 } finally {
