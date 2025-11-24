@@ -7,6 +7,7 @@
 - 230125 : add school info. @ desktop
 - 250201 : reborn
 - 250202 : test2
+- https://delightful-cassata-217688.netlify.app
 
 > #!/usr/bin/bash
 > sources=(
