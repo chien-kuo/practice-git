@@ -1,13 +1,8 @@
 # Memo
 
-- this is a practice project.
-- markdown syntax test.
-- try my first push through ssh protocol.
-- this is written at my laptio.
-- 230125 : add school info. @ desktop
-- 250201 : reborn
-- 250202 : test2
-- https://delightful-cassata-217688.netlify.app
+- [First practice on React + Firebase](https://wangtzu.netlify.app/)
+
+## Useful
 
 > #!/usr/bin/bash
 > sources=(
