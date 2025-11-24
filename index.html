@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>門牌意見調查表 (公開同步版)</title>
+    <title>社區意見調查表單</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
@@ -236,7 +236,7 @@
                         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
                             <h1 className="text-xl md:text-2xl font-bold flex items-center">
                                 <i className="fas fa-city mr-3"></i>
-                                社區門牌意見統整
+                                社區意見統整
                             </h1>
                             <button 
                                 onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminLogin(true)}
@@ -276,7 +276,7 @@
 
                                     <div className="space-y-5">
                                         <div>
-                                            <label className="block text-gray-600 font-medium mb-2">1. 選擇門牌</label>
+                                            <label className="block text-gray-600 font-medium mb-2">1. 門牌號碼</label>
                                             <div className="relative">
                                                 <select 
                                                     value={selectedHouse}
@@ -333,7 +333,7 @@
                                         <table className="w-full text-left">
                                             <thead>
                                                 <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
-                                                    <th className="px-6 py-3 font-semibold w-1/4">門牌</th>
+                                                    <th className="px-6 py-3 font-semibold w-1/4">門牌號碼</th>
                                                     <th className="px-6 py-3 font-semibold w-3/4">內容</th>
                                                 </tr>
                                             </thead>
