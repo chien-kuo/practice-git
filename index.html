@@ -449,7 +449,7 @@
                                     <button onClick={() => setShowAdminLogin(false)}><i className="fas fa-times"></i></button>
                                 </div>
                                 <div className="space-y-4">
-                                    <div className="text-sm text-gray-500 mb-2">請使用 Firebase Console 設定的 Email 帳密登入</div>
+                                    <div className="text-sm text-gray-500 mb-2">請使用設定的帳密登入</div>
                                     <input type="email" value={adminUser} onChange={e => setAdminUser(e.target.value)} className="w-full border rounded p-2" placeholder="管理員信箱 (Email)" />
                                     <input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)} className="w-full border rounded p-2" placeholder="密碼" />
                                     {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
