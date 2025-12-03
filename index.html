@@ -7,7 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+        <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-font-msyh@1.0.0/dist/msyh.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
@@ -239,6 +242,86 @@
                 }
             };
 
+            const handleExport = async () => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                // Create a temporary container for rendering each page
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'fixed';
+                tempContainer.style.left = '-9999px';
+                tempContainer.style.width = '210mm';
+                tempContainer.style.minHeight = '297mm';
+                tempContainer.style.padding = '20mm';
+                tempContainer.style.backgroundColor = 'white';
+                tempContainer.style.display = 'flex';
+                tempContainer.style.flexDirection = 'column';
+                tempContainer.style.justifyContent = 'center';
+                tempContainer.style.alignItems = 'center';
+                tempContainer.style.textAlign = 'center';
+                tempContainer.style.boxSizing = 'border-box';
+                tempContainer.style.fontFamily = "'Noto Sans TC', sans-serif";
+                document.body.appendChild(tempContainer);
+
+                try {
+                    for (let i = 0; i < dataList.length; i++) {
+                        const item = dataList[i];
+                        
+                        // Clear previous content
+                        tempContainer.innerHTML = '';
+
+                        // Create house number element with brackets
+                        const houseNumberEl = document.createElement('div');
+                        houseNumberEl.style.fontSize = '60px';
+                        houseNumberEl.style.fontWeight = 'bold';
+                        houseNumberEl.style.color = '#0000FF';
+                        houseNumberEl.style.marginBottom = '40px';
+                        houseNumberEl.style.textAlign = 'center';
+                        houseNumberEl.style.lineHeight = '1.2';
+                        houseNumberEl.textContent = `【 ${item.houseNumber}號 】`;
+
+                        // Create opinion element
+                        const opinionEl = document.createElement('div');
+                        opinionEl.style.fontSize = '80px';
+                        opinionEl.style.fontWeight = 'bold';
+                        opinionEl.style.color = '#000000';
+                        opinionEl.style.textAlign = 'center';
+                        opinionEl.style.wordWrap = 'break-word';
+                        opinionEl.style.maxWidth = '170mm';
+                        opinionEl.style.lineHeight = '1.4';
+                        opinionEl.textContent = item.opinion;
+
+                        tempContainer.appendChild(houseNumberEl);
+                        tempContainer.appendChild(opinionEl);
+
+                        // Convert to canvas with higher scale for better quality
+                        const canvas = await html2canvas(tempContainer, {
+                            scale: 3,
+                            useCORS: true,
+                            backgroundColor: '#ffffff',
+                            logging: false
+                        });
+
+                        const imgData = canvas.toDataURL('image/png');
+                        
+                        // Add page to PDF
+                        if (i > 0) {
+                            doc.addPage();
+                        }
+                        
+                        doc.addImage(imgData, 'PNG', 0, 0, 210, 297);
+                    }
+
+                    doc.save('community_opinions.pdf');
+                } finally {
+                    document.body.removeChild(tempContainer);
+                }
+            };
+
             // --- Helper Component: Status Cell ---
             const StatusCell = ({ houseNum }) => {
                 if (!houseNum) return <div className="h-8 mb-1"></div>;
@@ -297,6 +380,9 @@
                                     <div className="flex gap-3">
                                         <button onClick={handleExportCSV} disabled={dataList.length === 0} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 text-sm shadow">
                                             <i className="fas fa-file-csv mr-2"></i>匯出 CSV
+                                        </button>
+                                        <button onClick={handleExport} disabled={dataList.length === 0} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 text-sm shadow">
+                                            <i className="fas fa-file-pdf mr-2"></i>匯出 PDF
                                         </button>
                                         <button onClick={handleClearData} disabled={dataList.length === 0} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-sm shadow">
                                             <i className="fas fa-trash mr-2"></i>清空資料庫
