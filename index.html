@@ -569,13 +569,13 @@
                                                                 <span className="text-xs text-gray-500">{adminSortKey === 'houseNumber' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
                                                             </button>
                                                         </th>
+                                                        <th className="px-6 py-3 font-semibold w-1/2">內容</th>
                                                         <th className="px-6 py-3 font-semibold w-1/4">
-                                                            <button onClick={() => toggleAdminSort('updatedAt')} className="flex items-center gap-2">
-                                                                最後更新時間
+                                                            <button onClick={() => toggleAdminSort('updatedAt')} className="flex items-center gap-2 justify-end">
                                                                 <span className="text-xs text-gray-500">{adminSortKey === 'updatedAt' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
+                                                                最後更新時間
                                                             </button>
                                                         </th>
-                                                        <th className="px-6 py-3 font-semibold w-1/2">內容</th>
                                                     </tr>
                                                 ) : (
                                                     <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
@@ -594,8 +594,8 @@
                                                         adminDisplayList.map(item => (
                                                             <tr key={item.id} className="hover:bg-blue-50 transition fade-in">
                                                                 <td className="px-6 py-4"><span className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">{item.houseNumber}</span></td>
-                                                                <td className="px-6 py-4 text-gray-600 text-sm">{item.updatedAt ? new Date((item.updatedAt.seconds ?? item.updatedAt) * 1000).toLocaleString('zh-TW') : ''}</td>
                                                                 <td className="px-6 py-4 text-gray-700 break-words">{item.opinion}</td>
+                                                                <td className="px-6 py-4 text-gray-600 text-sm text-right">{item.updatedAt ? new Date((item.updatedAt.seconds ?? item.updatedAt) * 1000).toLocaleString('zh-TW') : ''}</td>
                                                             </tr>
                                                         ))
                                                     ) : (
