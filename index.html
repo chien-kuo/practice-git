@@ -342,6 +342,18 @@
                 );
             };
 
+            // Create a display list sorted by updatedAt (newest first) for the public table only.
+            const displayList = React.useMemo(() => {
+                const arr = [...dataList];
+                arr.sort((a, b) => {
+                    const aTime = a.updatedAt ? (a.updatedAt.seconds ?? a.updatedAt) : 0;
+                    const bTime = b.updatedAt ? (b.updatedAt.seconds ?? b.updatedAt) : 0;
+                    if (bTime === aTime) return parseInt(a.houseNumber) - parseInt(b.houseNumber);
+                    return bTime - aTime;
+                });
+                return arr;
+            }, [dataList]);
+
             return (
                 <div className="min-h-screen pb-12 flex flex-col relative">
                     {/* Error Banner */}
@@ -378,14 +390,37 @@
                                         <i className="fas fa-tools mr-2"></i>後台操作 ({user ? user.email : 'Admin'})
                                     </h2>
                                     <div className="flex gap-3">
-                                        <button onClick={handleExportCSV} disabled={dataList.length === 0} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 text-sm shadow">
-                                            <i className="fas fa-file-csv mr-2"></i>匯出 CSV
+                                        <button
+                                            onClick={handleExportCSV}
+                                            disabled={dataList.length === 0}
+                                            title="匯出 CSV"
+                                            aria-label="匯出 CSV"
+                                            className="bg-green-600 text-white w-11 h-10 flex items-center justify-center rounded hover:bg-green-700 disabled:opacity-50 shadow"
+                                        >
+                                            <i className="fas fa-file-csv"></i>
+                                            <span className="sr-only">匯出 CSV</span>
                                         </button>
-                                        <button onClick={handleExport} disabled={dataList.length === 0} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 text-sm shadow">
-                                            <i className="fas fa-file-pdf mr-2"></i>匯出 PDF
+
+                                        <button
+                                            onClick={handleExport}
+                                            disabled={dataList.length === 0}
+                                            title="匯出 PDF"
+                                            aria-label="匯出 PDF"
+                                            className="bg-blue-600 text-white w-11 h-10 flex items-center justify-center rounded hover:bg-blue-700 disabled:opacity-50 shadow"
+                                        >
+                                            <i className="fas fa-file-pdf"></i>
+                                            <span className="sr-only">匯出 PDF</span>
                                         </button>
-                                        <button onClick={handleClearData} disabled={dataList.length === 0} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 text-sm shadow">
-                                            <i className="fas fa-trash mr-2"></i>清空資料庫
+
+                                        <button
+                                            onClick={handleClearData}
+                                            disabled={dataList.length === 0}
+                                            title="清空資料庫"
+                                            aria-label="清空資料庫"
+                                            className="bg-red-600 text-white w-11 h-10 flex items-center justify-center rounded hover:bg-red-700 disabled:opacity-50 shadow"
+                                        >
+                                            <i className="fas fa-trash-alt"></i>
+                                            <span className="sr-only">清空資料庫</span>
                                         </button>
                                     </div>
                                 </div>
@@ -505,7 +540,7 @@
                                                 ) : dataList.length === 0 ? (
                                                     <tr><td colSpan="2" className="px-6 py-12 text-center text-gray-400 bg-gray-50/30">目前尚無資料，請成為第一位填寫者。</td></tr>
                                                 ) : (
-                                                    dataList.map(item => (
+                                                    displayList.map(item => (
                                                         <tr key={item.id} className="hover:bg-blue-50 transition fade-in">
                                                             <td className="px-6 py-4"><span className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">{item.houseNumber}</span></td>
                                                             <td className="px-6 py-4 text-gray-700 break-words">{item.opinion}</td>
