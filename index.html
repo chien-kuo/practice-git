@@ -358,6 +358,30 @@
             const [adminSortKey, setAdminSortKey] = React.useState('houseNumber');
             const [adminSortDir, setAdminSortDir] = React.useState(1); // 1 = asc, -1 = desc
 
+            // Selection state for admin table (for bulk delete)
+            const [selectedRows, setSelectedRows] = React.useState([]);
+
+            const toggleSelect = (id) => {
+                setSelectedRows(prev => {
+                    if (prev.includes(id)) return prev.filter(x => x !== id);
+                    return [...prev, id];
+                });
+            };
+
+            const toggleSelectAll = () => {
+                const allIds = adminDisplayList.map(i => i.id);
+                if (selectedRows.length === allIds.length) {
+                    setSelectedRows([]);
+                } else {
+                    setSelectedRows(allIds);
+                }
+            };
+
+            // Clear selection when dataList changes to avoid stale ids
+            React.useEffect(() => {
+                setSelectedRows(prev => prev.filter(id => dataList.some(d => d.id === id)));
+            }, [dataList]);
+
             const toggleAdminSort = (key) => {
                 if (adminSortKey === key) {
                     setAdminSortDir(prev => -prev);
@@ -454,6 +478,36 @@
                                             <i className="fas fa-trash-alt"></i>
                                             <span className="sr-only">清空資料庫</span>
                                         </button>
+                                            {/* Delete selected rows button */}
+                                            <button
+                                                onClick={async () => {
+                                                    if (selectedRows.length === 0) return;
+                                                    if (!confirm(`確定要刪除 ${selectedRows.length} 筆所選資料嗎？此操作無法復原。`)) return;
+                                                    setSubmitting(true);
+                                                    try {
+                                                        const collectionRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection(PUBLIC_COLLECTION);
+                                                        const batch = db.batch();
+                                                        selectedRows.forEach(id => {
+                                                            const docRef = collectionRef.doc(id);
+                                                            batch.delete(docRef);
+                                                        });
+                                                        await batch.commit();
+                                                        alert('已刪除所選資料');
+                                                        setSelectedRows([]);
+                                                    } catch (err) {
+                                                        alert('刪除失敗：' + err.message);
+                                                    } finally {
+                                                        setSubmitting(false);
+                                                    }
+                                                }}
+                                                disabled={selectedRows.length === 0}
+                                                title="刪除所選"
+                                                aria-label="刪除所選"
+                                                className="bg-red-500 text-white px-3 h-10 flex items-center justify-center rounded hover:bg-red-600 disabled:opacity-50 shadow"
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                                <span className="sr-only">刪除所選</span>
+                                            </button>
                                     </div>
                                 </div>
 
@@ -512,44 +566,46 @@
                         )}
 
                         <div className="grid md:grid-cols-12 gap-8">
-                            {/* Left: Input Form */}
-                            <div className="md:col-span-4">
-                                <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-                                    <h2 className="text-xl font-bold text-gray-700 mb-6 border-b pb-2">填寫意見</h2>
-                                    <div className="space-y-5">
-                                        <div>
-                                            <label className="block text-gray-600 font-medium mb-2">1. 門牌號碼</label>
-                                            <div className="relative">
-                                                <select 
-                                                    value={selectedHouse}
-                                                    onChange={(e) => setSelectedHouse(e.target.value)}
-                                                    className="w-full border border-gray-300 rounded p-3 appearance-none bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
-                                                >
-                                                    {HOUSE_NUMBERS.map(n => <option key={n} value={n}>{n} 號</option>)}
-                                                </select>
-                                                <div className="absolute right-3 top-3.5 pointer-events-none text-gray-500"><i className="fas fa-chevron-down"></i></div>
+                            {/* Left: Input Form (hidden for admin) */}
+                            {!isAdmin && (
+                                <div className="md:col-span-4">
+                                    <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
+                                        <h2 className="text-xl font-bold text-gray-700 mb-6 border-b pb-2">填寫意見</h2>
+                                        <div className="space-y-5">
+                                            <div>
+                                                <label className="block text-gray-600 font-medium mb-2">1. 門牌號碼</label>
+                                                <div className="relative">
+                                                    <select 
+                                                        value={selectedHouse}
+                                                        onChange={(e) => setSelectedHouse(e.target.value)}
+                                                        className="w-full border border-gray-300 rounded p-3 appearance-none bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                                                    >
+                                                        {HOUSE_NUMBERS.map(n => <option key={n} value={n}>{n} 號</option>)}
+                                                    </select>
+                                                    <div className="absolute right-3 top-3.5 pointer-events-none text-gray-500"><i className="fas fa-chevron-down"></i></div>
+                                                </div>
                                             </div>
+                                            <div>
+                                                <label className="block text-gray-600 font-medium mb-2">2. 您的意見</label>
+                                                <textarea 
+                                                    value={opinion}
+                                                    onChange={(e) => setOpinion(e.target.value)}
+                                                    rows="4"
+                                                    placeholder="請輸入建議..."
+                                                    className="w-full border border-gray-300 rounded p-3 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
+                                                ></textarea>
+                                            </div>
+                                            <button 
+                                                onClick={handleSubmit}
+                                                disabled={submitting}
+                                                className="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
+                                            >
+                                                {submitting ? <><i className="fas fa-circle-notch fa-spin mr-2"></i>處理中...</> : <><i className="fas fa-paper-plane mr-2"></i>送出資料</>}
+                                            </button>
                                         </div>
-                                        <div>
-                                            <label className="block text-gray-600 font-medium mb-2">2. 您的意見</label>
-                                            <textarea 
-                                                value={opinion}
-                                                onChange={(e) => setOpinion(e.target.value)}
-                                                rows="4"
-                                                placeholder="請輸入建議..."
-                                                className="w-full border border-gray-300 rounded p-3 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
-                                            ></textarea>
-                                        </div>
-                                        <button 
-                                            onClick={handleSubmit}
-                                            disabled={submitting}
-                                            className="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
-                                        >
-                                            {submitting ? <><i className="fas fa-circle-notch fa-spin mr-2"></i>處理中...</> : <><i className="fas fa-paper-plane mr-2"></i>送出資料</>}
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Right: Display Table */}
                             <div className="md:col-span-8">
@@ -562,21 +618,24 @@
                                         <table className="w-full text-left">
                                             <thead>
                                                 {isAdmin ? (
-                                                    <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
-                                                        <th className="px-6 py-3 font-semibold w-1/4">
-                                                            <button onClick={() => toggleAdminSort('houseNumber')} className="flex items-center gap-2">
-                                                                門牌號碼
-                                                                <span className="text-xs text-gray-500">{adminSortKey === 'houseNumber' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
-                                                            </button>
-                                                        </th>
-                                                        <th className="px-6 py-3 font-semibold w-1/2">內容</th>
-                                                        <th className="px-6 py-3 font-semibold w-1/4">
-                                                            <button onClick={() => toggleAdminSort('updatedAt')} className="flex items-center gap-2 justify-end">
-                                                                <span className="text-xs text-gray-500">{adminSortKey === 'updatedAt' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
-                                                                最後更新時間
-                                                            </button>
-                                                        </th>
-                                                    </tr>
+                                                            <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
+                                                                <th className="px-6 py-3 font-semibold w-12">
+                                                                    <input type="checkbox" className="form-checkbox" onChange={toggleSelectAll} checked={adminDisplayList.length > 0 && selectedRows.length === adminDisplayList.length} />
+                                                                </th>
+                                                                <th className="px-6 py-3 font-semibold w-1/4">
+                                                                    <button onClick={() => toggleAdminSort('houseNumber')} className="flex items-center gap-2">
+                                                                        門牌號碼
+                                                                        <span className="text-xs text-gray-500">{adminSortKey === 'houseNumber' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
+                                                                    </button>
+                                                                </th>
+                                                                <th className="px-6 py-3 font-semibold">內容</th>
+                                                                <th className="px-6 py-3 font-semibold w-40">
+                                                                    <button onClick={() => toggleAdminSort('updatedAt')} className="flex items-center gap-2 justify-end w-full">
+                                                                        <span className="text-xs text-gray-500">{adminSortKey === 'updatedAt' ? (adminSortDir === 1 ? '▲' : '▼') : ''}</span>
+                                                                        最後更新時間
+                                                                    </button>
+                                                                </th>
+                                                            </tr>
                                                 ) : (
                                                     <tr className="bg-gray-50 text-gray-600 text-sm uppercase">
                                                         <th className="px-6 py-3 font-semibold w-1/4">門牌號碼</th>
@@ -593,6 +652,9 @@
                                                     isAdmin ? (
                                                         adminDisplayList.map(item => (
                                                             <tr key={item.id} className="hover:bg-blue-50 transition fade-in">
+                                                                <td className="px-6 py-4">
+                                                                    <input type="checkbox" className="form-checkbox" checked={selectedRows.includes(item.id)} onChange={() => toggleSelect(item.id)} />
+                                                                </td>
                                                                 <td className="px-6 py-4"><span className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">{item.houseNumber}</span></td>
                                                                 <td className="px-6 py-4 text-gray-700 break-words">{item.opinion}</td>
                                                                 <td className="px-6 py-4 text-gray-600 text-sm text-right">{item.updatedAt ? new Date((item.updatedAt.seconds ?? item.updatedAt) * 1000).toLocaleString('zh-TW') : ''}</td>
