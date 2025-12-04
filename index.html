@@ -342,6 +342,18 @@
                 );
             };
 
+            // Create a display list sorted by updatedAt (newest first) for the public table only.
+            const displayList = React.useMemo(() => {
+                const arr = [...dataList];
+                arr.sort((a, b) => {
+                    const aTime = a.updatedAt ? (a.updatedAt.seconds ?? a.updatedAt) : 0;
+                    const bTime = b.updatedAt ? (b.updatedAt.seconds ?? b.updatedAt) : 0;
+                    if (bTime === aTime) return parseInt(a.houseNumber) - parseInt(b.houseNumber);
+                    return bTime - aTime;
+                });
+                return arr;
+            }, [dataList]);
+
             return (
                 <div className="min-h-screen pb-12 flex flex-col relative">
                     {/* Error Banner */}
@@ -528,7 +540,7 @@
                                                 ) : dataList.length === 0 ? (
                                                     <tr><td colSpan="2" className="px-6 py-12 text-center text-gray-400 bg-gray-50/30">目前尚無資料，請成為第一位填寫者。</td></tr>
                                                 ) : (
-                                                    dataList.map(item => (
+                                                    displayList.map(item => (
                                                         <tr key={item.id} className="hover:bg-blue-50 transition fade-in">
                                                             <td className="px-6 py-4"><span className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">{item.houseNumber}</span></td>
                                                             <td className="px-6 py-4 text-gray-700 break-words">{item.opinion}</td>
