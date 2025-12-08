@@ -210,10 +210,15 @@
             };
 
             const handleExportCSV = () => {
+                // 根據目前是否有選取列決定要輸出的資料：若有選取 -> 只匯出選取；否則匯出全部
+                const exportList = (selectedRows && selectedRows.length > 0)
+                    ? dataList.filter(d => selectedRows.includes(d.id))
+                    : dataList;
+
                 const headers = ["門牌號碼,您的意見,最後更新時間"];
-                const rows = dataList.map(row => {
-                    const time = row.updatedAt ? new Date(row.updatedAt.seconds * 1000).toLocaleString('zh-TW') : '';
-                    const safeOpinion = `"${row.opinion.replace(/"/g, '""')}"`;
+                const rows = exportList.map(row => {
+                    const time = row.updatedAt ? new Date((row.updatedAt.seconds ?? row.updatedAt) * 1000).toLocaleString('zh-TW') : '';
+                    const safeOpinion = `"${(row.opinion || '').replace(/"/g, '""')}"`;
                     return `${row.houseNumber},${safeOpinion},${time}`;
                 });
                 const csvContent = "\uFEFF" + [headers, ...rows].join('\n'); 
@@ -243,6 +248,11 @@
             };
 
             const handleExport = async () => {
+                // 根據目前是否有選取列決定要輸出的資料：若有選取 -> 只匯出選取；否則匯出全部
+                const exportList = (selectedRows && selectedRows.length > 0)
+                    ? dataList.filter(d => selectedRows.includes(d.id))
+                    : dataList;
+
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF({
                     orientation: 'portrait',
@@ -268,8 +278,8 @@
                 document.body.appendChild(tempContainer);
 
                 try {
-                    for (let i = 0; i < dataList.length; i++) {
-                        const item = dataList[i];
+                    for (let i = 0; i < exportList.length; i++) {
+                        const item = exportList[i];
                         
                         // Clear previous content
                         tempContainer.innerHTML = '';
