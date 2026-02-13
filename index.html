@@ -88,7 +88,7 @@
                         }
                     } catch (err) {
                         console.error("Auth Error:", err);
-                        setErrorMsg("身份驗證失敗，請重新整理網頁。");
+                        setErrorMsg("系統尚未開放");
                     }
                 };
                 initAuth();
@@ -128,7 +128,7 @@
                     setLoading(false);
                 }, (error) => {
                     console.error("Snapshot Error:", error);
-                    setErrorMsg(`資料讀取失敗: ${error.message}`);
+                    setErrorMsg("系統尚未開放");
                     setLoading(false);
                 });
 
@@ -174,7 +174,7 @@
                     setOpinion(''); 
                 } catch (err) {
                     console.error("Write Error:", err);
-                    setErrorMsg(`送出失敗: ${err.message}`);
+                    setErrorMsg("系統尚未開放");
                 } finally {
                     setSubmitting(false);
                 }
