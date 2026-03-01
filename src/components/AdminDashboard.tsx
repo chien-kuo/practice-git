@@ -41,8 +41,7 @@ const AdminDashboard: React.FC = () => {
       const safeOpinion = `"${row.opinion.replace(/"/g, '""')}"`;
       return `${row.houseNumber},${safeOpinion},${time}`;
     });
-    const csvContent = "\uFEFF" + [headers, ...rows].join('
-'); 
+    const csvContent = "\uFEFF" + [headers, ...rows].join('\n'); 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

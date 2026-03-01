@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, UserShield, LogOut } from 'lucide-react';
+import { Building2, ShieldUser, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   isAdmin: boolean;
@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ isAdmin, onAdminClick }) => {
               : 'bg-blue-700 hover:bg-blue-600 border border-blue-400'
           }`}
         >
-          {isAdmin ? <LogOut size={16} /> : <UserShield size={16} />}
+          {isAdmin ? <LogOut size={16} /> : <ShieldUser size={16} />}
           {isAdmin ? '登出管理' : '管理者後台'}
         </button>
       </div>
