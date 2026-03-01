@@ -19,7 +19,7 @@ export const useSurvey = () => {
   const { user, setDataList, setLoading, setError } = useStore();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !db) return;
 
     setError(null);
     setLoading(true);

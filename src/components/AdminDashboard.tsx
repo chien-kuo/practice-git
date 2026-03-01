@@ -3,7 +3,7 @@ import { useStore } from '../store/useStore';
 import { useSurvey } from '../hooks/useSurvey';
 import { FileDown, FileSpreadsheet, Trash2, Wrench } from 'lucide-react';
 import { HOUSE_NUMBERS, ODD_HOUSES, EVEN_HOUSES } from '../utils/constants';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 const StatusCell: React.FC<{ houseNum: number, isDone: boolean }> = ({ houseNum, isDone }) => {

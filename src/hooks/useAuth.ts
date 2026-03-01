@@ -7,6 +7,10 @@ export const useAuth = () => {
   const { setUser, setIsAdmin, setError } = useStore();
 
   useEffect(() => {
+    if (!auth) {
+      setError("Firebase Auth 未初始化");
+      return;
+    }
     const initAuth = async () => {
       try {
         if (!auth.currentUser) {

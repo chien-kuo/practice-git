@@ -1,4 +1,4 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
@@ -12,6 +12,17 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+// 安全初始化
+let app;
+try {
+  if (!firebaseConfig.apiKey) {
+    console.error("Firebase API Key is missing! Check your environment variables.");
+  }
+  app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+} catch (error) {
+  console.error("Firebase initialization failed:", error);
+}
+
+export const db = app ? getFirestore(app) : null;
+export const auth = app ? getAuth(app) : null;
+
