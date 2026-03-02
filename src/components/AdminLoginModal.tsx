@@ -55,6 +55,7 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ onClose }) => {
                 type="email" 
                 value={email} 
                 onChange={e => setEmail(e.target.value)} 
+                data-testid="admin-email-input"
                 className="w-full border rounded pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" 
                 placeholder="example@mail.com" 
               />
@@ -68,6 +69,7 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ onClose }) => {
                 type="password" 
                 value={pass} 
                 onChange={e => setPass(e.target.value)} 
+                data-testid="admin-password-input"
                 className="w-full border rounded pl-10 pr-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none" 
                 placeholder="••••••••" 
               />
@@ -77,6 +79,7 @@ const AdminLoginModal: React.FC<AdminLoginModalProps> = ({ onClose }) => {
           <button 
             type="submit"
             disabled={loading}
+            data-testid="admin-login-button"
             className="w-full bg-blue-800 text-white py-2.5 rounded hover:bg-black transition font-bold disabled:opacity-50"
           >
             {loading ? '登入中...' : '安全登入'}

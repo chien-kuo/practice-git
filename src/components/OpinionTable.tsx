@@ -125,7 +125,7 @@ const OpinionTable: React.FC = () => {
               </tr>
             ) : (
               sortedData.map(item => (
-                <tr key={item.id} className="hover:bg-blue-50 transition fade-in">
+                <tr key={item.id} className="hover:bg-blue-50 transition fade-in" data-testid="opinion-row">
                   {isAdmin && (
                     <td className="px-6 py-4">
                       <input 
@@ -136,11 +136,14 @@ const OpinionTable: React.FC = () => {
                     </td>
                   )}
                   <td className="px-6 py-4">
-                    <span className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">
+                    <span 
+                      className="inline-block bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm"
+                      data-testid="house-number"
+                    >
                       {item.houseNumber}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-gray-700 break-words">{item.opinion}</td>
+                  <td className="px-6 py-4 text-gray-700 break-words" data-testid="opinion-text">{item.opinion}</td>
                   {isAdmin && (
                     <td className="px-6 py-4 text-gray-600 text-sm text-right">
                       {item.updatedAt ? new Date(item.updatedAt.seconds * 1000).toLocaleString('zh-TW') : '-'}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Send, Loader2, ChevronDown } from 'lucide-react';
 import { useSurvey } from '../hooks/useSurvey';
+import { useStore } from '../store/useStore';
 import { HOUSE_NUMBERS } from '../utils/constants';
 
 const SurveyForm: React.FC = () => {
+  const { user } = useStore();
   const { submitOpinion } = useSurvey();
   const [selectedHouse, setSelectedHouse] = useState(HOUSE_NUMBERS[0]);
   const [opinion, setOpinion] = useState('');
@@ -34,6 +36,7 @@ const SurveyForm: React.FC = () => {
             <select 
               value={selectedHouse}
               onChange={(e) => setSelectedHouse(Number(e.target.value))}
+              data-testid="house-select"
               className="w-full border border-gray-300 rounded p-3 appearance-none bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
             >
               {HOUSE_NUMBERS.map(n => <option key={n} value={n}>{n} 號</option>)}
@@ -50,20 +53,23 @@ const SurveyForm: React.FC = () => {
             onChange={(e) => setOpinion(e.target.value)}
             rows={4}
             placeholder="請輸入建議..."
+            data-testid="opinion-input"
             className="w-full border border-gray-300 rounded p-3 bg-gray-50 focus:outline-none focus:border-blue-500 focus:bg-white transition"
           ></textarea>
         </div>
         <button 
           onClick={handleSubmit}
-          disabled={submitting}
+          disabled={submitting || !user}
+          data-testid="submit-button"
           className="w-full bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 transition transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
         >
           {submitting ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
-          {submitting ? '處理中...' : '送出資料'}
+          {!user ? '連線中...' : (submitting ? '處理中...' : '送出資料')}
         </button>
       </div>
     </div>
   );
 };
+
 
 export default SurveyForm;

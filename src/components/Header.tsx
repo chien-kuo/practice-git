@@ -16,6 +16,7 @@ const Header: React.FC<HeaderProps> = ({ isAdmin, onAdminClick }) => {
         </h1>
         <button 
           onClick={onAdminClick}
+          data-testid="admin-header-button"
           className={`text-sm px-4 py-2 rounded transition flex items-center gap-2 ${
             isAdmin 
               ? 'bg-red-500 hover:bg-red-600' 
