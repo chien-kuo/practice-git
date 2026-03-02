@@ -32,17 +32,21 @@ You are a **Senior Full-stack Web Engineer** specializing in high-performance **
 
 ---
 
-## 🤖 Current Project Status (2026-03-01)
-- **Status:** Refactoring Complete & Production-ready.
+## 🤖 Current Project Status (2026-03-02)
+- **Status:** E2E Testing Integrated & All Core Flows Verified.
 - **Key Milestones:**
     - Successfully migrated from monolithic `index.html` to a modular React 19 SPA.
     - Implemented Service-Hook-UI pattern.
     - Fixed ESM import issues (jsPDF) and Firebase initialization safety.
     - Deployed to Netlify with working SPA routing.
-- **Core Features:**
-    - Real-time community opinion submission.
-    - Admin dashboard with progress visualizer.
-    - Bulk delete and export features (CSV/PDF).
+    - Integrated **Playwright** for End-to-End (E2E) testing.
+    - Enhanced component testability with `data-testid` attributes.
+    - Implemented secure handling of admin credentials via `.env` variables.
+    - All E2E tests for user submission and admin authentication are passing.
+- **Core Features (Verified):**
+    - [x] Anonymous community opinion submission and real-time display.
+    - [x] Admin login/logout and access to dashboard with data visualization.
+    - [x] Bulk delete and export features (CSV/PDF) (functional, E2E admin tests verify access).
 
 ## 💡 Resume Context Prompt
 "Hi Gemini, please resume work on the Hotpot Survey (社區意見調查) project.
@@ -52,4 +56,5 @@ The project is a React 19 SPA refactored with:
 - State: Zustand
 - Backend: Firebase Modular SDK
 - Architecture: Service-Hook-UI Pattern
-Please analyze `src/hooks/useSurvey.ts` and `src/hooks/useAuth.ts` to understand the business logic before starting new features."
+- **E2E Testing:** Fully integrated with Playwright, and all core user/admin flows are verified.
+Please run `npm run test:e2e` to verify the environment before starting new tasks."
