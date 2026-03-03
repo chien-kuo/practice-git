@@ -3,7 +3,11 @@ import { onAuthStateChanged, signInAnonymously, signOut, signInWithEmailAndPassw
 import { auth } from '../services/firebase';
 import { useStore } from '../store/useStore';
 
-export const useAuth = () => {
+/**
+ * Hook to initialize and maintain the Firebase Auth listener.
+ * Should be called once at the top level (e.g., App.tsx).
+ */
+export const useAuthListener = () => {
   const { setUser, setIsAdmin, setError } = useStore();
 
   useEffect(() => {
@@ -11,6 +15,7 @@ export const useAuth = () => {
       setError("Firebase Auth 未初始化");
       return;
     }
+
     const initAuth = async () => {
       try {
         if (!auth.currentUser) {
@@ -21,9 +26,10 @@ export const useAuth = () => {
         setError("系統尚未開放");
       }
     };
+    
     initAuth();
 
-    return onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       if (user) {
         setIsAdmin(!user.isAnonymous);
@@ -31,8 +37,15 @@ export const useAuth = () => {
         setIsAdmin(false);
       }
     });
-  }, [setUser, setIsAdmin, setError]);
 
+    return () => unsubscribe();
+  }, [setUser, setIsAdmin, setError]);
+};
+
+/**
+ * Hook to access auth actions like login and logout.
+ */
+export const useAuth = () => {
   const login = async (email: string, pass: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, pass);
@@ -53,3 +66,4 @@ export const useAuth = () => {
 
   return { login, logout };
 };
+

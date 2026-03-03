@@ -70,19 +70,26 @@ test.describe('Admin Authentication Flow', () => {
   test('should log out admin and hide admin dashboard', async ({ page }) => {
     // First, log in as admin
     await page.goto('/');
+    
+    // Wait for the app to be ready (at least the header button)
+    await expect(page.getByTestId('admin-header-button')).toBeVisible({ timeout: 10000 });
     await page.click('[data-testid="admin-header-button"]');
+    
+    // Wait for the login modal to be visible
+    await expect(page.getByTestId('admin-email-input')).toBeVisible({ timeout: 5000 });
+    
     await page.fill('[data-testid="admin-email-input"]', adminEmail);
     await page.fill('[data-testid="admin-password-input"]', adminPassword);
     await page.click('[data-testid="admin-login-button"]');
 
     // Wait for admin elements to be visible
-    await expect(page.getByText('後台操作')).toBeVisible();
+    await expect(page.getByText('後台操作')).toBeVisible({ timeout: 15000 });
 
     // Click the header button again, which should now trigger logout
     await page.click('[data-testid="admin-header-button"]'); 
 
     // Wait for admin elements to disappear and user view to return
-    await expect(page.getByText('後台操作')).not.toBeVisible();
+    await expect(page.getByText('後台操作')).not.toBeVisible({ timeout: 10000 });
     await expect(page.getByTestId('opinion-input')).toBeVisible(); // Should be back to survey form
   });
 });

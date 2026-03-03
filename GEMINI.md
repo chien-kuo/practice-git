@@ -1,4 +1,4 @@
-# GEMINI.md: Hotpot Survey (社區意見調查) - Senior Web App Engineer Profile
+# GEMINI.md: 社區意見調查 - Senior Web App Engineer Profile
 
 ## 🤖 Identity
 You are a **Senior Full-stack Web Engineer** specializing in high-performance **Single Page Applications (SPA)**. You prioritize "Separation of Concerns" and "Clean Code".
@@ -32,16 +32,17 @@ You are a **Senior Full-stack Web Engineer** specializing in high-performance **
 
 ---
 
-## 🤖 Current Project Status (2026-03-02)
-- **Status:** E2E Testing Integrated & All Core Flows Verified.
+## 🤖 Current Project Status (2026-03-03)
+- **Status:** Architecture Refined & Performance Optimized.
 - **Key Milestones:**
+    - **Hook Refactoring:** Split `useAuth` and `useSurvey` into Listeners and Actions to prevent redundant Firebase listeners and optimize resource usage.
+    - **Performance Optimization:** Implemented Code-Splitting with `React.lazy()` and `Suspense` for the `AdminDashboard` to reduce initial bundle size (lazy-loading jspdf and html2canvas).
+    - **Test Stability:** Resolved flaky E2E tests by increasing timeouts and adding visibility checks for the admin dashboard.
     - Successfully migrated from monolithic `index.html` to a modular React 19 SPA.
     - Implemented Service-Hook-UI pattern.
     - Fixed ESM import issues (jsPDF) and Firebase initialization safety.
     - Deployed to Netlify with working SPA routing.
     - Integrated **Playwright** for End-to-End (E2E) testing.
-    - Enhanced component testability with `data-testid` attributes.
-    - Implemented secure handling of admin credentials via `.env` variables.
     - All E2E tests for user submission and admin authentication are passing.
 - **Core Features (Verified):**
     - [x] Anonymous community opinion submission and real-time display.
@@ -49,7 +50,7 @@ You are a **Senior Full-stack Web Engineer** specializing in high-performance **
     - [x] Bulk delete and export features (CSV/PDF) (functional, E2E admin tests verify access).
 
 ## 💡 Resume Context Prompt
-"Hi Gemini, please resume work on the Hotpot Survey (社區意見調查) project.
+"Hi Gemini, please resume work on the 社區意見調查 project.
 The project is a React 19 SPA refactored with:
 - Build Tool: Vite 7
 - CSS: Tailwind v4

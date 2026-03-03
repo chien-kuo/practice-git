@@ -1,4 +1,4 @@
-# Hotpot Survey (社區意見調查)
+# 社區意見調查
 
 A high-performance Community Opinion Survey application built with a modern React 19 Single Page Application (SPA) architecture and Firebase real-time backend.
 
@@ -15,10 +15,15 @@ A high-performance Community Opinion Survey application built with a modern Reac
 
 ## 🏗 Architecture (Service-Hook-UI Pattern)
 
-1.  **Service Layer (`src/services/`):** Singleton Firebase initialization.
-2.  **Hook Layer (`src/hooks/`):** All Firebase interactions (Auth, Firestore) and business logic are encapsulated here.
-3.  **Store Layer (`src/store/`):** Zustand stores for global state.
+1.  **Service Layer (`src/services/`):** Singleton Firebase initialization with environment variable safety checks.
+2.  **Hook Layer (`src/hooks/`):** Refined into **Listeners** (for global side-effects like real-time data syncing) and **Actions** (for UI-triggered operations). This minimizes redundant listeners and optimizes resource usage.
+3.  **Store Layer (`src/store/`):** Zustand stores for global/persisted state and cross-component communication.
 4.  **UI Layer (`src/components/`):** Presentational components using Tailwind CSS and Lucide React icons.
+
+## ⚡️ Performance & Optimization
+
+*   **Code-Splitting:** The `AdminDashboard` is non-critically lazy-loaded using `React.lazy()` and `Suspense` to optimize initial load time and reduce the main bundle size by splitting heavy libraries like `jspdf` and `html2canvas`.
+*   **Resource Management:** Shared listeners at the application root prevent duplicate Firestore connections, ensuring consistent state across all components.
 
 ## 🛠 Local Setup & Running
 

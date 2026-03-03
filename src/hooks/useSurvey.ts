@@ -9,13 +9,16 @@ import {
   serverTimestamp, 
   getDocs, 
   writeBatch,
-  deleteDoc
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useStore } from '../store/useStore';
 import { APP_ID, PUBLIC_COLLECTION } from '../utils/constants';
 
-export const useSurvey = () => {
+/**
+ * Hook to initialize and maintain the Firestore survey data listener.
+ * Should be called once at the top level (e.g., App.tsx).
+ */
+export const useSurveyListener = () => {
   const { user, setDataList, setLoading, setError } = useStore();
 
   useEffect(() => {
@@ -46,6 +49,13 @@ export const useSurvey = () => {
 
     return () => unsubscribe();
   }, [user, setDataList, setLoading, setError]);
+};
+
+/**
+ * Hook to access survey actions (submit, clear, delete).
+ */
+export const useSurvey = () => {
+  const { user } = useStore();
 
   const submitOpinion = async (houseNumber: number, opinion: string) => {
     if (!user) throw new Error("User not authenticated");
@@ -91,3 +101,4 @@ export const useSurvey = () => {
 
   return { submitOpinion, clearAllData, deleteSelected };
 };
+
