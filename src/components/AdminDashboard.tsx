@@ -22,7 +22,7 @@ const StatusCell: React.FC<{ houseNum: number, isDone: boolean }> = ({ houseNum,
 };
 
 const AdminDashboard: React.FC = () => {
-  const { dataList, user } = useStore();
+  const { dataList, user, selectedIds } = useStore();
   const { clearAllData } = useSurvey();
 
   const completedHouseNumbers = useMemo(() => {
@@ -34,9 +34,13 @@ const AdminDashboard: React.FC = () => {
     return Math.round((completedHouseNumbers.size / HOUSE_NUMBERS.length) * 100);
   }, [completedHouseNumbers]);
 
+  const exportList = selectedIds.length > 0
+    ? dataList.filter(item => selectedIds.includes(item.id))
+    : dataList;
+
   const handleExportCSV = () => {
     const headers = ["門牌號碼,您的意見,最後更新時間"];
-    const rows = dataList.map(row => {
+    const rows = exportList.map(row => {
       const time = row.updatedAt ? new Date(row.updatedAt.seconds * 1000).toLocaleString('zh-TW') : '';
       const safeOpinion = `"${row.opinion.replace(/"/g, '""')}"`;
       return `${row.houseNumber},${safeOpinion},${time}`;
@@ -76,8 +80,8 @@ const AdminDashboard: React.FC = () => {
     document.body.appendChild(tempContainer);
 
     try {
-      for (let i = 0; i < dataList.length; i++) {
-        const item = dataList[i];
+      for (let i = 0; i < exportList.length; i++) {
+        const item = exportList[i];
         tempContainer.innerHTML = `
           <div style="font-size: 60px; font-weight: bold; color: #0000FF; margin-bottom: 40px; text-align: center; line-height: 1.2;">
             【 ${item.houseNumber}號 】
@@ -90,7 +94,10 @@ const AdminDashboard: React.FC = () => {
         const canvas = await html2canvas(tempContainer, {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          onclone: (clonedDoc) => {
+            clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach(el => el.remove());
+          }
         });
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -98,6 +105,8 @@ const AdminDashboard: React.FC = () => {
         doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
       }
       doc.save('community_opinions.pdf');
+    } catch (err: any) {
+      alert('PDF 匯出失敗：' + err.message);
     } finally {
       document.body.removeChild(tempContainer);
     }

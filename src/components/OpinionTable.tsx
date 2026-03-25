@@ -4,12 +4,13 @@ import { useSurvey } from '../hooks/useSurvey';
 import { Loader2, Trash2 } from 'lucide-react';
 
 const OpinionTable: React.FC = () => {
-  const { dataList, isLoading, isAdmin } = useStore();
+  const { dataList, isLoading, isAdmin, selectedIds, setSelectedIds } = useStore();
   const { deleteSelected } = useSurvey();
-  
+
   const [sortKey, setSortKey] = useState<'houseNumber' | 'updatedAt'>('houseNumber');
   const [sortDir, setSortDir] = useState<1 | -1>(1);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const selectedRows = selectedIds;
+  const setSelectedRows = setSelectedIds;
 
   const sortedData = useMemo(() => {
     const arr = [...dataList];
@@ -34,8 +35,8 @@ const OpinionTable: React.FC = () => {
   };
 
   const toggleSelect = (id: string) => {
-    setSelectedRows(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    setSelectedRows(
+      selectedRows.includes(id) ? selectedRows.filter(x => x !== id) : [...selectedRows, id]
     );
   };
 

@@ -7,11 +7,13 @@ interface AppState {
   dataList: any[];
   isLoading: boolean;
   error: string | null;
+  selectedIds: string[];
   setUser: (user: User | null) => void;
   setIsAdmin: (isAdmin: boolean) => void;
   setDataList: (dataList: any[]) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  setSelectedIds: (ids: string[]) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -20,9 +22,11 @@ export const useStore = create<AppState>((set) => ({
   dataList: [],
   isLoading: true,
   error: null,
+  selectedIds: [],
   setUser: (user) => set({ user }),
   setIsAdmin: (isAdmin) => set({ isAdmin }),
   setDataList: (dataList) => set({ dataList }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
+  setSelectedIds: (ids) => set({ selectedIds: ids }),
 }));
