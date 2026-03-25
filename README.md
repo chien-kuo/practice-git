@@ -47,26 +47,28 @@ A high-performance Community Opinion Survey application built with a modern Reac
     ```
 3.  **Run Development Server:**
     ```bash
-    npm run dev
+    npm run dev          # connects to production Firebase
+    npm run dev:emulator # connects to local Firebase Emulator (no real data written)
     ```
     Access the site at: `http://localhost:5173`
 
 ## 🧪 Testing with Playwright
 
-We use Playwright for End-to-End (E2E) testing to verify critical flows like survey submission and admin dashboard access.
+Tests use **Firebase Emulator** (Auth + Firestore) — no real data is written to production.
 
-*   **Run All Tests (Headless):**
-    ```bash
-    npm run test:e2e
-    ```
-*   **Debug Tests (UI Mode):**
-    ```bash
-    npx playwright test --ui
-    ```
-*   **View Last Test Report:**
-    ```bash
-    npx playwright show-report
-    ```
+**Prerequisites (first time only):**
+- Install Java: `brew install --cask temurin`
+- Install Firebase CLI: `npm install -g firebase-tools && firebase login`
+- Create `.env.emulator` by copying `.env` and adding `VITE_USE_EMULATOR=true`
+
+**Running tests:**
+```bash
+npm run test:e2e        # Playwright auto-starts emulators, runs tests, then shuts down
+npx playwright test --ui  # Debug mode with UI
+npx playwright show-report  # View last test report
+```
+
+> **Note:** Firebase anonymous auth is blocked in headless browsers (reCAPTCHA). Always use the emulator for Playwright tests — never point tests at the real Firebase project.
 
 ---
 
