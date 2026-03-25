@@ -93,9 +93,9 @@ const AdminDashboard: React.FC = () => {
           backgroundColor: '#ffffff'
         });
 
-        const imgData = canvas.toDataURL('image/png');
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
         if (i > 0) doc.addPage();
-        doc.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
       }
       doc.save('community_opinions.pdf');
     } finally {
