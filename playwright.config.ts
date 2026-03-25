@@ -2,8 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Load .env file
-dotenv.config();
+// Load emulator env for tests
+dotenv.config({ path: path.resolve(__dirname, '.env.emulator') });
 
 export default defineConfig({
   testDir: './tests',
@@ -23,12 +23,21 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    env: {
-      ...process.env,
-    }
-  },
+  webServer: [
+    {
+      command: 'npx firebase emulators:start --only auth,firestore',
+      url: 'http://localhost:9099',
+      reuseExistingServer: !process.env.CI,
+      timeout: 30000,
+    },
+    {
+      command: 'npm run dev -- --mode emulator',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+      env: {
+        ...process.env,
+        VITE_USE_EMULATOR: 'true',
+      },
+    },
+  ],
 });
